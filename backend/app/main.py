@@ -140,17 +140,113 @@ COMMON_GRAMMAR_ISSUES = {
     "experiance": "experience", "developement": "development"
 }
 
+SKILL_ALIASES = {
+    "python": ["python", "python3"],
+    "javascript": ["javascript", "js", "ecmascript"],
+    "java": ["java", "core java"],
+    "react": ["react", "reactjs", "react.js"],
+    "node.js": ["node.js", "nodejs", "node js", "node-js"],
+    "sql": ["sql", "mysql", "postgresql", "postgres", "sqlite", "database", "databases"],
+    "git": ["git", "github", "gitlab", "version control"],
+    "docker": ["docker", "container", "containers", "containerization"],
+    "aws": ["aws", "amazon web services"],
+    "mongodb": ["mongodb", "mongo db", "mongo"],
+    "express": ["express", "expressjs", "express.js"],
+    "rest api": ["rest api", "rest apis", "restful api", "restful apis"],
+    "api": ["api", "apis"],
+    "html": ["html", "html5"],
+    "css": ["css", "css3"],
+    "kubernetes": ["kubernetes", "k8s"],
+    "jenkins": ["jenkins", "jenkins pipeline", "jenkins pipelines"],
+    "terraform": ["terraform", "infrastructure as code", "iac"],
+    "monitoring": ["monitoring", "observability"],
+    "ci/cd": ["ci/cd", "ci cd", "cicd", "ci-cd", "continuous integration", "continuous delivery"],
+    "machine learning": ["machine learning", "ml"],
+    "data analysis": ["data analysis", "data analytics"],
+    "tensorflow": ["tensorflow", "tf"],
+    "figma": ["figma", "figma design"],
+    "agile": ["agile", "scrum", "kanban"],
+}
+
+
+def _normalize_skill_text(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", " ", value.lower()).strip()
+
+
+def _normalize_compact(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "", value.lower()).strip()
+
+
+def _text_quality_score(value: str) -> int:
+    if not value:
+        return 0
+    letters = sum(1 for ch in value if ch.isalpha())
+    words = len(re.findall(r"[A-Za-z]{2,}", value))
+    return letters + (words * 5)
+
+
+def _extract_pdf_stream_text(file_content: bytes) -> str:
+    snippets = []
+    try:
+        reader = PyPDF2.PdfReader(io.BytesIO(file_content))
+        for page in reader.pages:
+            try:
+                contents = page.get_contents()
+                streams = contents if isinstance(contents, list) else [contents]
+                for stream in streams:
+                    if stream is None:
+                        continue
+                    data = stream.get_data()
+                    decoded = data.decode("latin-1", errors="ignore")
+                    snippets.extend(match.group(1) for match in re.finditer(r"\(([^()]*)\)", decoded))
+            except Exception:
+                continue
+    except Exception:
+        return ""
+
+    text = " ".join(snippets)
+    text = text.replace("\\(", "(").replace("\\)", ")").replace("\\n", " ").replace("\\r", " ")
+    text = re.sub(r"\s+", " ", text).strip()
+    return text
+
+
+def _contains_skill(text_lower: str, skill: str) -> bool:
+    skill_lower = skill.lower().strip()
+    if not skill_lower:
+        return False
+
+    normalized_text = _normalize_skill_text(text_lower)
+    compact_text = _normalize_compact(text_lower)
+    aliases = [skill_lower, *SKILL_ALIASES.get(skill_lower, [])]
+    for alias in aliases:
+        # Match phrases as standalone terms so "java" doesn't match "javascript".
+        escaped = re.escape(alias).replace(r"\ ", r"[\s\-_/]+")
+        if re.search(rf"(?<![a-z0-9]){escaped}(?![a-z0-9])", text_lower):
+            return True
+        normalized_alias = _normalize_skill_text(alias)
+        if normalized_alias and re.search(rf"(?<![a-z0-9]){re.escape(normalized_alias)}(?![a-z0-9])", normalized_text):
+            return True
+        compact_alias = _normalize_compact(alias)
+        if compact_alias:
+            if len(compact_alias) <= 3:
+                if re.search(rf"(?<![a-z0-9]){re.escape(compact_alias)}(?![a-z0-9])", normalized_text):
+                    return True
+            elif compact_alias in compact_text:
+                return True
+    return False
+
 
 # ─── Text Extraction ───────────────────────────────────────────────────────────
 
 def extract_text_from_pdf(file_content: bytes) -> str:
     try:
+        candidates = []
         try:
             import pdfplumber
             with pdfplumber.open(io.BytesIO(file_content)) as pdf:
                 text = "\n".join(page.extract_text() or "" for page in pdf.pages)
             if text.strip():
-                return text
+                candidates.append(text)
         except ImportError:
             pass
         pdf_reader = PyPDF2.PdfReader(io.BytesIO(file_content))
@@ -159,7 +255,16 @@ def extract_text_from_pdf(file_content: bytes) -> str:
             page_text = page.extract_text()
             if page_text:
                 text += page_text + "\n"
-        return text
+        if text.strip():
+            candidates.append(text)
+
+        stream_text = _extract_pdf_stream_text(file_content)
+        if stream_text:
+            candidates.append(stream_text)
+
+        if candidates:
+            return max(candidates, key=_text_quality_score)
+        return ""
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error reading PDF: {str(e)}")
 
@@ -218,16 +323,7 @@ def extract_skills(text: str, required_skills: List[str]) -> Dict[str, List[str]
     text_lower = text.lower()
     found_skills = []
     for skill in required_skills:
-        skill_lower = skill.lower()
-        if skill_lower in text_lower:
-            found_skills.append(skill)
-            continue
-        if any(variation in text_lower for variation in [
-            skill_lower.replace('.', ''),
-            skill_lower.replace(' ', ''),
-            skill_lower + 'js',
-            skill_lower.replace('-', '')
-        ]):
+        if _contains_skill(text_lower, skill):
             found_skills.append(skill)
     missing_skills = [skill for skill in required_skills if skill not in found_skills]
     return {
@@ -272,7 +368,7 @@ def extract_all_skills(text: str) -> List[str]:
     text_lower = text.lower()
     found_skills = []
     for skill in COMMON_TECHNICAL_SKILLS:
-        if skill.lower() in text_lower:
+        if _contains_skill(text_lower, skill):
             found_skills.append(skill)
     skills_section_match = re.search(
         r'(?:skills|technical skills)[:\s]+(.*?)(?:\n\n|education|experience|$)',
@@ -332,11 +428,7 @@ def calculate_skills_match_score(found_skills: List[str], required_skills: List[
     if not required_skills:
         return 100
     match_percentage = (len(found_skills) / len(required_skills)) * 100
-    if len(found_skills) >= 3:
-        match_percentage += 10
-    elif len(found_skills) >= 1:
-        match_percentage += 5
-    return int(min(match_percentage, 100))
+    return int(round(min(match_percentage, 100)))
 
 def calculate_experience_score(text: str, keywords: List[str]) -> int:
     score = 30
@@ -370,7 +462,7 @@ def calculate_formatting_score(text: str) -> int:
 def calculate_keyword_optimization_score(text: str, required_skills: List[str], keywords: List[str]) -> int:
     text_lower = text.lower()
     score = 40
-    skills_found = sum(1 for skill in required_skills if skill.lower() in text_lower)
+    skills_found = sum(1 for skill in required_skills if _contains_skill(text_lower, skill))
     if required_skills:
         score += min((skills_found / len(required_skills)) * 35, 35)
     actions_found = sum(1 for kw in keywords if kw.lower() in text_lower)

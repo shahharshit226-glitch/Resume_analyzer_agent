@@ -140,10 +140,74 @@ const ResumeAnalyzer = () => {
     contact_info: { name: 'Candidate', email: 'Available in resume', phone: 'Available in resume' },
   });
 
+  const normalizeSkill = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+
+  const skillsLooselyMatch = (candidate, required) => {
+    const a = normalizeSkill(candidate);
+    const b = normalizeSkill(required);
+    if (!a || !b) return false;
+    if (a === b) return true;
+    if (a.length >= 5 && b.length >= 5 && (a.includes(b) || b.includes(a))) return true;
+    return false;
+  };
+
+  const normalizeAnalysisResults = (data, selectedRoleSkills = []) => {
+    const backendFoundSkills = data?.skills_analysis?.found_skills || [];
+    const backendMissingSkills = data?.skills_analysis?.missing_skills || [];
+    const extractedSkills = data?.resume_summary?.skills_available || [];
+    const candidateSkills = [...new Set([...backendFoundSkills, ...extractedSkills])];
+
+    let foundSkills = backendFoundSkills;
+    let missingSkills = backendMissingSkills;
+
+    if (selectedRoleSkills.length > 0) {
+      const fallbackFoundSkills = selectedRoleSkills.filter((skill) =>
+        candidateSkills.some((candidateSkill) => skillsLooselyMatch(candidateSkill, skill))
+      );
+      const fallbackMissingSkills = selectedRoleSkills.filter(
+        (skill) => !fallbackFoundSkills.includes(skill)
+      );
+
+      if (fallbackFoundSkills.length > foundSkills.length) {
+        foundSkills = fallbackFoundSkills;
+        missingSkills = fallbackMissingSkills;
+      }
+    }
+
+    const totalSkills = foundSkills.length + missingSkills.length;
+    const fallbackSkillsMatch = totalSkills > 0 ? Math.round((foundSkills.length / totalSkills) * 100) : 0;
+
+    const scores = {
+      ats_compatibility: Number(data?.scores?.ats_compatibility || 0),
+      skills_match: Number(data?.scores?.skills_match || 0),
+      experience_strength: Number(data?.scores?.experience_strength || 0),
+      formatting_quality: Number(data?.scores?.formatting_quality || 0),
+      keyword_optimization: Number(data?.scores?.keyword_optimization || 0),
+    };
+
+    if (scores.skills_match === 0 || scores.skills_match < fallbackSkillsMatch) {
+      scores.skills_match = fallbackSkillsMatch;
+    }
+
+    const overallScore = Number.isFinite(Number(data?.overall_score)) ? Number(data.overall_score) : 0;
+
+    return {
+      ...data,
+      overall_score: overallScore,
+      scores,
+      skills_analysis: {
+        ...data?.skills_analysis,
+        found_skills: foundSkills,
+        missing_skills: missingSkills,
+        total_skills_found: Number(data?.skills_analysis?.total_skills_found || foundSkills.length),
+      },
+    };
+  };
+
   const analyzeResume = async () => {
     if (!file) { setError('Please upload a resume first'); return; }
     if (useCustomJob && !customJobDescription.trim()) { setError('Please enter a job description'); return; }
-    setAnalyzing(true); setError(null); setResults(null);
+    setAnalyzing(true); setError(null); setResults(null); setEmailSent(false);
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -157,7 +221,9 @@ const ResumeAnalyzer = () => {
         throw new Error(msg);
       }
       const data = await response.json();
-      setResults({ ...data, ai_summary: generateAISummary() });
+      const selectedRoleSkills = useCustomJob ? [] : (jobRoles[jobRole]?.skills || []);
+      const normalized = normalizeAnalysisResults(data, selectedRoleSkills);
+      setResults({ ...normalized, ai_summary: generateAISummary() });
       setTimeout(() => analyzerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 500);
     } catch (err) {
       setError(err.message || 'Analysis failed. Please try again.');
@@ -177,16 +243,14 @@ const ResumeAnalyzer = () => {
   const handleSendEmail = async () => {
     if (!emailAddress) { setError('Please enter an email address'); return; }
     setSendingEmail(true);
+    setError(null);
     try {
-      const res = await fetch('http://localhost:8000/send-report', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: emailAddress, analysis_results: results }),
-      });
-      if (!res.ok) throw new Error('Failed');
+      await sendReport(emailAddress, results);
       setEmailSent(true);
       setTimeout(() => setEmailSent(false), 5000);
-    } catch { setError('Could not send email. Is the backend running?'); }
+    } catch (err) {
+      setError(err?.response?.data?.detail || 'Could not send email report.');
+    }
     finally { setSendingEmail(false); }
   };
 
