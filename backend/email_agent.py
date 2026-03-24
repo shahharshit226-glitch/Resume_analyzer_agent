@@ -1485,10 +1485,11 @@ class EmailAgent:
         """
         try:
             self._ensure_gmail_label(mail_conn, label_name)
-            eid = imap_email_id if isinstance(imap_email_id, bytes) else imap_email_id.encode()
-            status, _ = mail_conn.copy(eid, f'"{label_name}"')
+            uid = imap_email_id.decode() if isinstance(imap_email_id, bytes) else str(imap_email_id)
+            mail_conn.select("inbox")
+            status, _ = mail_conn.uid("COPY", uid, f'"{label_name}"')
             if status == "OK":
-                mail_conn.store(eid, "+FLAGS", "\\Deleted")
+                mail_conn.uid("STORE", uid, "+FLAGS", "(\\Deleted)")
                 # ✅ NO expunge() here — done once at end of check_emails()
                 self._log(f"📂 Email routed to Gmail label: [{label_name}]")
             else:
