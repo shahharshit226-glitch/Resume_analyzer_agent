@@ -1,7 +1,7 @@
 """
 auth.py - JWT authentication with role-based access control.
 Uses SHA256 hashing instead of bcrypt to avoid version conflicts.
-Roles: admin, hr, finance
+Roles: admin, hr, finance, user
 """
 
 import os
@@ -34,7 +34,7 @@ class UserCreate(BaseModel):
     name: str
     email: str
     password: str
-    role: str
+    role: str = "user"
 
 
 def _hash_password(password: str) -> str:

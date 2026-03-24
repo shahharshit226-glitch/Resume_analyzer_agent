@@ -34,6 +34,19 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
+  const register = async ({ name, email, password }) => {
+    const res = await fetch(`${API}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password, role: "user" }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || "Registration failed");
+    }
+    return res.json();
+  };
+
   const logout = () => {
     localStorage.removeItem("agh_token");
     setToken(null);
@@ -47,12 +60,13 @@ export const AuthProvider = ({ children }) => {
     const map = {
       hr:      ["candidates", "agent", "business", "analytics", "notifications", "search"],
       finance: ["business", "analytics", "notifications", "search"],
+      user:    ["analyzer"],
     };
     return (map[user.role] || []).includes(section);
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout, canAccess }}>
+    <AuthContext.Provider value={{ user, token, loading, login, register, logout, canAccess }}>
       {children}
     </AuthContext.Provider>
   );

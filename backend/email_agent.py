@@ -833,6 +833,7 @@ Includes: rate limiting, file size limits, sender blocking, attachment validatio
 
 import imaplib
 import email
+import html
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import smtplib
@@ -1259,6 +1260,137 @@ class EmailAgent:
         
         return html_content
     
+    def generate_rich_response_email(
+        self,
+        candidate_name: str,
+        analysis_results: Dict,
+        is_shortlisted: bool
+    ) -> str:
+        """Generate a richer candidate email with full scoring and suggestions."""
+        safe_name = html.escape(candidate_name or "Candidate")
+        overall_score = analysis_results.get("overall_score", 0)
+        scores = analysis_results.get("scores", {})
+        ats_score = scores.get("ats_compatibility", 0)
+        skills_match = scores.get("skills_match", 0)
+        experience_score = scores.get("experience_strength", 0)
+        formatting_score = scores.get("formatting_quality", 0)
+        keyword_score = scores.get("keyword_optimization", 0)
+        suggestions = analysis_results.get("suggestions", [])[:4]
+
+        suggestions_html = "".join(
+            f'<li style="padding: 6px 0; color: #374151;">{html.escape(str(item).strip())}</li>'
+            for item in suggestions
+        )
+        if not suggestions_html:
+            suggestions_html = (
+                '<li style="padding: 6px 0; color: #374151;">'
+                "Your resume is already in a strong position. Keep improving clarity, impact, and role-specific keywords."
+                "</li>"
+            )
+
+        score_cards_html = "".join([
+            f"""
+            <div style="background:{bg}; border:1px solid {border}; border-radius:16px; padding:14px 16px; min-width:150px; flex:1;">
+                <div style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:{label_color};">{label}</div>
+                <div style="font-size:28px; font-weight:800; line-height:1.1; color:{value_color}; margin-top:8px;">{value}/100</div>
+            </div>
+            """
+            for label, value, bg, border, label_color, value_color in [
+                ("Overall", overall_score, "#EEF2FF", "#C7D2FE", "#4338CA", "#312E81"),
+                ("ATS", ats_score, "#ECFDF5", "#A7F3D0", "#047857", "#065F46"),
+                ("Skills", skills_match, "#EFF6FF", "#BFDBFE", "#1D4ED8", "#1E3A8A"),
+                ("Experience", experience_score, "#F5F3FF", "#DDD6FE", "#7C3AED", "#5B21B6"),
+                ("Formatting", formatting_score, "#FFF7ED", "#FED7AA", "#C2410C", "#9A3412"),
+                ("Keywords", keyword_score, "#FDF2F8", "#FBCFE8", "#BE185D", "#9D174D"),
+            ]
+        ])
+
+        if is_shortlisted:
+            return f"""
+            <html>
+            <body style="margin:0; padding:24px; background:#F8FAFC; font-family:Arial, sans-serif; line-height:1.6; color:#1F2937;">
+                <div style="max-width:760px; margin:0 auto; background:#FFFFFF; border:1px solid #E5E7EB; border-radius:24px; overflow:hidden; box-shadow:0 12px 40px rgba(15,23,42,0.08);">
+                    <div style="background:linear-gradient(135deg, #312E81 0%, #4F46E5 55%, #10B981 100%); padding:32px 28px; color:#FFFFFF;">
+                        <div style="font-size:13px; letter-spacing:0.08em; text-transform:uppercase; opacity:0.88; font-weight:700;">Resume Review Update</div>
+                        <h2 style="margin:10px 0 8px 0; font-size:30px; line-height:1.2;">Congratulations, {safe_name}!</h2>
+                        <p style="margin:0; font-size:16px; color:#E0E7FF;">
+                            Your resume has been shortlisted for further review. We have also shared your full score breakdown and resume improvement notes below.
+                        </p>
+                    </div>
+                    <div style="padding:28px;">
+                        <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:18px; padding:18px 20px; margin-bottom:24px;">
+                            <p style="margin:0 0 8px 0;">Dear {safe_name},</p>
+                            <p style="margin:0;">
+                                We are pleased to inform you that your resume has been <strong style="color:#059669;">successfully shortlisted</strong>.
+                                Our hiring team will review your application and contact you within 3-5 business days regarding the next steps in the interview process.
+                            </p>
+                        </div>
+                        <h3 style="margin:0 0 14px 0; color:#312E81; font-size:20px;">Your Resume Scorecard</h3>
+                        <div style="display:flex; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
+                            {score_cards_html}
+                        </div>
+                        <div style="background:linear-gradient(180deg, #FFFBEB 0%, #FFFFFF 100%); border:1px solid #FDE68A; border-radius:18px; padding:20px; margin-bottom:24px;">
+                            <h3 style="margin:0 0 12px 0; color:#B45309; font-size:18px;">Suggested Resume Improvements</h3>
+                            <p style="margin:0 0 10px 0; color:#92400E; font-size:14px;">
+                                You are shortlisted, but these changes can further improve your profile for later rounds and similar opportunities:
+                            </p>
+                            <ul style="margin:0; padding-left:20px;">
+                                {suggestions_html}
+                            </ul>
+                        </div>
+                        <div style="background:#F0FDF4; border:1px solid #BBF7D0; border-radius:18px; padding:20px; margin-bottom:24px;">
+                            <h3 style="margin:0 0 10px 0; color:#166534; font-size:18px;">What Happens Next</h3>
+                            <ul style="margin:0; padding-left:20px; color:#166534;">
+                                <li style="padding:4px 0;">Your application moves to the next review stage.</li>
+                                <li style="padding:4px 0;">Our team may contact you for interview or follow-up details.</li>
+                                <li style="padding:4px 0;">Keep a recent copy of your resume ready for future communication.</li>
+                            </ul>
+                        </div>
+                        <p style="margin:0 0 18px 0;">Best regards,<br><strong>AI Resume Analyzer Team</strong></p>
+                        <hr style="border:none; border-top:1px solid #E5E7EB; margin:0 0 14px 0;">
+                        <p style="margin:0; font-size:12px; color:#6B7280; text-align:center;">
+                            This is an automated email. Please do not reply directly to this message.
+                        </p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+
+        return f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 2px solid #EF4444; border-radius: 10px;">
+                <h2 style="color: #EF4444; text-align: center;">Thank You for Your Application</h2>
+                <p>Dear {safe_name},</p>
+                <p>Thank you for your interest in our position. After careful review of your resume,
+                we regret to inform you that we will not be moving forward with your application at this time.</p>
+                <div style="background-color: #FEF2F2; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <h3 style="color: #EF4444; margin-top: 0;">Your Resume Analysis Results:</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="padding: 8px 0; border-bottom: 1px solid #FEE2E2;"><strong>Overall Score:</strong> <span style="font-size: 1.2em; font-weight: bold;">{overall_score}/100</span></li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #FEE2E2;"><strong>ATS Compatibility:</strong> {ats_score}/100</li>
+                        <li style="padding: 8px 0;"><strong>Skills Match:</strong> {skills_match}/100</li>
+                    </ul>
+                </div>
+                <div style="background-color: #FEF3C7; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <h3 style="color: #D97706; margin-top: 0;">Suggestions to Improve Your Resume:</h3>
+                    <ul style="color: #92400E; padding-left: 20px;">
+                        {suggestions_html}
+                    </ul>
+                </div>
+                <p>We encourage you to refine your resume based on the suggestions above and apply again in the future.
+                We wish you the best in your job search.</p>
+                <p style="margin-top: 30px;">Best regards,<br><strong>AI Resume Analyzer Team</strong></p>
+                <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 20px 0;">
+                <p style="font-size: 0.9em; color: #6B7280; text-align: center;">
+                    This is an automated email. Please do not reply directly to this message.
+                </p>
+            </div>
+        </body>
+        </html>
+        """
+
     def send_email_response(
         self, 
         recipient_email: str, 
@@ -1504,7 +1636,7 @@ class EmailAgent:
                     self._log(f"❌ REJECTED — {sender_email} (ATS: {ats_score} < {EMAIL_CONFIG['ATS_THRESHOLD']})")
                     subject = "Thank You for Your Application"
 
-                html_content = self.generate_response_email(sender_name, analysis_results, is_shortlisted)
+                html_content = self.generate_rich_response_email(sender_name, analysis_results, is_shortlisted)
                 self.send_email_response(sender_email, subject, html_content)
                 self._processed_count += 1
 

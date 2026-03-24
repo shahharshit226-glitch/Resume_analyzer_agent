@@ -3,7 +3,7 @@ import {
   Upload, FileText, Brain, TrendingUp, CheckCircle, AlertCircle, Award,
   Target, Zap, Sparkles, BarChart3, Users, Clock, Star, ArrowRight,
   RefreshCw, Menu, X, Home, Info, Phone, FileQuestion, Shield,
-  Github, Linkedin, Twitter, Mail, MapPin, ChevronRight, Book, Lightbulb,
+  Github, Linkedin, Twitter, Mail, MapPin, ChevronRight,
   LogOut, Search,
 } from 'lucide-react';
 import { startEmailAgent, getEmailStatus, getAgentLog, sendReport } from "./services/api";
@@ -95,7 +95,6 @@ const ResumeAnalyzer = () => {
   const featuresRef  = useRef(null);
   const agentRef     = useRef(null);
   const analyzerRef  = useRef(null);
-  const guideRef     = useRef(null);
   const businessRef  = useRef(null);
   const analyticsRef = useRef(null);
   const searchRef    = useRef(null);
@@ -283,7 +282,6 @@ const ResumeAnalyzer = () => {
     { ref: businessRef,  section: 'business',  icon: Users,    label: 'Mail Center'},
     { ref: analyticsRef, section: 'analytics', icon: BarChart3,label: 'Analytics'  },
     { ref: searchRef,    section: 'search',    icon: Search,   label: 'Search'     },
-    { ref: guideRef,     section: 'guide',     icon: Book,     label: 'Guide'      },
   ];
 
   const ROLE_BADGE = {
@@ -319,7 +317,7 @@ const ResumeAnalyzer = () => {
             </div>
 
             {/* Desktop nav */}
-            <div className="hidden lg:flex items-center gap-5">
+            <div className="hidden lg:flex items-center gap-3">
               {NAV.map(({ ref, section, icon: Icon, label }) => (
                 <button
                   key={section}
@@ -335,19 +333,19 @@ const ResumeAnalyzer = () => {
             </div>
 
             {/* Right side: user info + notifications + logout */}
-            <div className="hidden lg:flex items-center gap-3">
+            <div className="hidden lg:flex items-center gap-2 shrink-0">
               {user && (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 min-w-0">
                   <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${ROLE_BADGE[user.role] || "bg-gray-200 text-gray-700"}`}>
                     {user.role.toUpperCase()}
                   </span>
-                  <span className="text-sm font-semibold text-gray-700">{user.name}</span>
+                  <span className="text-sm font-semibold text-gray-700 truncate max-w-[120px]">{user.name}</span>
                 </div>
               )}
               <NotificationBell token={token} />
               <button
                 onClick={logout}
-                className="flex items-center gap-2 px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl font-semibold text-sm transition-all"
+                className="flex items-center gap-2 px-3 py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl font-semibold text-sm transition-all whitespace-nowrap"
               >
                 <LogOut className="w-4 h-4" /> Sign Out
               </button>
@@ -718,46 +716,6 @@ const ResumeAnalyzer = () => {
           <SearchFilter token={token} />
         </div>
 
-        {/* ── Guide ── */}
-        <section ref={guideRef} className="container mx-auto px-4 py-20 bg-white/30">
-          <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">Quick Start Guide</h2>
-              <p className="text-xl text-gray-600">Get started in 3 simple steps</p>
-            </div>
-            <div className="grid md:grid-cols-3 gap-8 mb-12">
-              {[
-                { num: 1, gradient: 'from-indigo-600 to-purple-600', title: 'Upload Resume',  desc: 'Select your resume file (PDF, DOCX, or TXT). Make sure it contains your experience, education, and skills.' },
-                { num: 2, gradient: 'from-purple-600 to-pink-600',   title: 'Choose Role',    desc: 'Select from 6 predefined roles or paste a custom job description for personalised analysis.' },
-                { num: 3, gradient: 'from-pink-600 to-red-600',      title: 'Get Insights',   desc: 'Receive instant AI feedback with scores, skills analysis, and actionable improvement tips.' },
-              ].map(({ num, gradient, title, desc }) => (
-                <div key={num} className="bg-white/80 backdrop-blur-xl rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all border border-white">
-                  <div className={`w-16 h-16 bg-gradient-to-br ${gradient} rounded-2xl flex items-center justify-center text-white text-2xl font-black shadow-lg mb-6 mx-auto`}>{num}</div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-3 text-center">{title}</h3>
-                  <p className="text-gray-600 text-center">{desc}</p>
-                </div>
-              ))}
-            </div>
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-8 text-white">
-              <h3 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                <Lightbulb className="w-7 h-7 text-yellow-300" />Pro Tips for Best Results
-              </h3>
-              <div className="grid md:grid-cols-2 gap-4">
-                {[
-                  'Use clear section headings (Experience, Education, Skills)',
-                  'Include quantifiable achievements with numbers',
-                  'Match keywords from the job description',
-                  'Keep resume between 400-700 words',
-                ].map(tip => (
-                  <div key={tip} className="flex items-start gap-3">
-                    <ChevronRight className="w-5 h-5 flex-shrink-0 mt-1" />
-                    <span>{tip}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
       </div>
 
       {/* ── Footer ── */}
@@ -790,7 +748,6 @@ const ResumeAnalyzer = () => {
                   { ref: homeRef,      section: 'home',      label: 'Home'          },
                   { ref: analyzerRef,  section: 'analyzer',  label: 'Analyzer'      },
                   { ref: analyticsRef, section: 'analytics', label: 'Analytics'     },
-                  { ref: guideRef,     section: 'guide',     label: 'User Guide'    },
                 ].map(({ ref, section, label }) => (
                   <li key={section}>
                     <button onClick={() => scrollToSection(ref, section)} className="text-gray-300 hover:text-white transition-colors flex items-center gap-2">

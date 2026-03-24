@@ -37,9 +37,10 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
 
 @router.post("/register")
 def register(user: UserCreate):
-    if user.role not in ("admin", "hr", "finance"):
-        raise HTTPException(status_code=400, detail="Role must be admin, hr, or finance")
-    ok = create_user(user.name, user.email, user.password, user.role)
+    role = (user.role or "user").strip().lower()
+    if role not in ("admin", "hr", "finance", "user"):
+        raise HTTPException(status_code=400, detail="Role must be admin, hr, finance, or user")
+    ok = create_user(user.name, user.email, user.password, role)
     if not ok:
         raise HTTPException(status_code=409, detail="Email already registered")
     return {"message": "User created successfully"}
