@@ -290,6 +290,58 @@ const ResumeAnalyzer = () => {
     finance: "bg-amber-600 text-white",
   };
 
+  const HERO_STATS = [
+    { value: "5+", label: "Scoring Metrics", accent: "text-indigo-600" },
+    { value: "6", label: "Role Tracks", accent: "text-purple-600" },
+    { value: "24/7", label: "Agent Workflow", accent: "text-pink-600" },
+    { value: "AI", label: "Insights Engine", accent: "text-sky-600" },
+  ];
+
+  const FEATURE_CARDS = [
+    {
+      icon: FileText,
+      gradient: "from-sky-500 to-cyan-500",
+      eyebrow: "Screen Faster",
+      title: "ATS-aware parsing",
+      desc: "Extract resume content reliably from PDF, DOCX, and TXT while keeping the structure needed for applicant screening.",
+    },
+    {
+      icon: CheckCircle,
+      gradient: "from-emerald-500 to-green-500",
+      eyebrow: "Match Better",
+      title: "Skills gap intelligence",
+      desc: "See which required skills are present, which are missing, and how closely a resume aligns with the selected role.",
+    },
+    {
+      icon: Award,
+      gradient: "from-violet-500 to-fuchsia-500",
+      eyebrow: "Explain Clearly",
+      title: "Score breakdowns you can trust",
+      desc: "Review ATS, formatting, experience, keyword, and skills scores instead of relying on one opaque final number.",
+    },
+    {
+      icon: Sparkles,
+      gradient: "from-amber-500 to-orange-500",
+      eyebrow: "Improve Faster",
+      title: "Actionable improvement suggestions",
+      desc: "Generate feedback that helps candidates strengthen weak areas and helps recruiters communicate next steps with clarity.",
+    },
+    {
+      icon: Mail,
+      gradient: "from-rose-500 to-pink-500",
+      eyebrow: "Automate Outreach",
+      title: "Email-first candidate handling",
+      desc: "Receive resumes by email, trigger analysis automatically, and send polished shortlist or feedback responses instantly.",
+    },
+    {
+      icon: BarChart3,
+      gradient: "from-indigo-500 to-blue-500",
+      eyebrow: "Operate Smarter",
+      title: "Dashboards, analytics, and search",
+      desc: "Track candidate flow, review business mails, monitor activity, and search records from one consistent interface.",
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       {/* Background blobs */}
@@ -382,38 +434,95 @@ const ResumeAnalyzer = () => {
       <div className="relative">
         {/* ── Hero ── */}
         <section ref={homeRef} className="container mx-auto px-4 py-20">
-          <div className="text-center max-w-4xl mx-auto">
-            <div className="inline-block mb-6">
-              <div className="flex items-center gap-2 px-4 py-2 bg-indigo-100 rounded-full">
-                <Sparkles className="w-4 h-4 text-indigo-600" />
-                <span className="text-sm font-semibold text-indigo-600">AI-Powered Resume Analysis</span>
+          <div className="max-w-6xl mx-auto">
+            <div className="grid xl:grid-cols-[1.15fr_0.85fr] gap-10 items-center">
+              <div>
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 border border-indigo-100 rounded-full shadow-sm mb-6">
+                  <Sparkles className="w-4 h-4 text-indigo-600" />
+                  <span className="text-sm font-semibold text-indigo-600">AI-Powered Resume Analysis Suite</span>
+                </div>
+
+                <h1 className="text-5xl md:text-7xl font-black mb-6 bg-gradient-to-r from-indigo-700 via-violet-600 to-sky-500 bg-clip-text text-transparent leading-[0.95]">
+                  Make every resume review sharper, faster, and easier to act on
+                </h1>
+
+                <p className="text-lg md:text-xl text-slate-600 mb-8 max-w-2xl">
+                  AI AgenticHire combines structured resume analysis, candidate communication, analytics, and email workflows in one polished workspace for modern hiring teams.
+                </p>
+
+                <div className="flex flex-col sm:flex-row items-center justify-start gap-4 mb-10">
+                  <button
+                    onClick={() => scrollToSection(analyzerRef, 'analyzer')}
+                    className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl font-bold text-lg hover:shadow-2xl hover:-translate-y-0.5 transition-all flex items-center gap-2"
+                  >
+                    Analyze Your Resume <ArrowRight className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => scrollToSection(agentRef, 'agent')}
+                    className="px-8 py-4 bg-white/90 text-slate-700 rounded-2xl font-bold text-lg hover:shadow-lg transition-all border border-slate-200"
+                  >
+                    Open Agent Workspace
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl">
+                  {HERO_STATS.map(({ value, label, accent }) => (
+                    <div key={label} className="bg-white/75 backdrop-blur-xl rounded-2xl border border-white shadow-lg px-5 py-5">
+                      <div className={`text-3xl md:text-4xl font-black mb-2 ${accent}`}>{value}</div>
+                      <div className="text-sm font-medium text-slate-600">{label}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-            <h1 className="text-6xl md:text-7xl font-black mb-6 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent leading-tight">
-              Transform Your Resume Into Your Dream Job
-            </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-              Get instant, AI-powered feedback with explainable scoring, personalized suggestions, and industry-leading NLP technology.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-              <button
-                onClick={() => scrollToSection(analyzerRef, 'analyzer')}
-                className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-lg hover:shadow-2xl transition-all flex items-center gap-2"
-              >
-                Analyze Your Resume <ArrowRight className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => scrollToSection(analyticsRef, 'analytics')}
-                className="px-8 py-4 bg-white text-gray-700 rounded-xl font-bold text-lg hover:shadow-lg transition-all border-2 border-gray-200"
-              >
-                View Analytics
-              </button>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto">
-              <div className="text-center"><div className="text-4xl font-black text-indigo-600 mb-2">5+</div><div className="text-sm text-gray-600">Scoring Metrics</div></div>
-              <div className="text-center"><div className="text-4xl font-black text-purple-600 mb-2">6</div><div className="text-sm text-gray-600">Job Roles</div></div>
-              <div className="text-center"><div className="text-4xl font-black text-pink-600 mb-2">AI</div><div className="text-sm text-gray-600">Powered</div></div>
-              <div className="text-center"><div className="text-4xl font-black text-blue-600 mb-2">100%</div><div className="text-sm text-gray-600">Free</div></div>
+
+              <div className="relative">
+                <div className="absolute -inset-4 bg-gradient-to-br from-indigo-200/50 via-sky-200/30 to-emerald-200/40 blur-3xl rounded-full" />
+                <div className="relative bg-slate-950 text-white rounded-[2rem] border border-white/10 shadow-2xl overflow-hidden">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(99,102,241,0.35),_transparent_40%),radial-gradient(circle_at_bottom_left,_rgba(16,185,129,0.25),_transparent_35%)]" />
+                  <div className="relative p-8">
+                    <div className="flex items-center justify-between mb-8">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.24em] text-slate-400 mb-2">Platform Snapshot</p>
+                        <h3 className="text-2xl font-black">One workspace for resume operations</h3>
+                      </div>
+                      <div className="p-3 rounded-2xl bg-white/10 border border-white/10">
+                        <Brain className="w-8 h-8 text-sky-300" />
+                      </div>
+                    </div>
+
+                    <div className="space-y-4 mb-8">
+                      {[
+                        { icon: CheckCircle, title: "Explainable scoring", text: "Review every resume through ATS, keyword, formatting, experience, and skills lenses." },
+                        { icon: Mail, title: "Integrated email flow", text: "Automate incoming resume handling and follow-up communication without leaving the dashboard." },
+                        { icon: Search, title: "Fast review operations", text: "Search records, inspect analytics, and keep candidate decisions organized in one place." },
+                      ].map(({ icon: Icon, title, text }) => (
+                        <div key={title} className="flex gap-4 p-4 rounded-2xl bg-white/6 border border-white/8">
+                          <div className="w-11 h-11 rounded-2xl bg-white/10 flex items-center justify-center flex-shrink-0">
+                            <Icon className="w-5 h-5 text-sky-200" />
+                          </div>
+                          <div>
+                            <div className="font-bold text-white">{title}</div>
+                            <p className="text-sm text-slate-300 mt-1">{text}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3">
+                      {[
+                        { label: "Resume", value: "Live" },
+                        { label: "Mail Agent", value: "Ready" },
+                        { label: "Analytics", value: "Realtime" },
+                      ].map(({ label, value }) => (
+                        <div key={label} className="rounded-2xl bg-white/8 border border-white/10 px-4 py-4 text-center">
+                          <div className="text-xs uppercase tracking-[0.16em] text-slate-400">{label}</div>
+                          <div className="text-sm font-bold text-white mt-2">{value}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -426,27 +535,48 @@ const ResumeAnalyzer = () => {
 
         {/* ── Features ── */}
         <section ref={featuresRef} className="container mx-auto px-4 py-20">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">Powerful Features</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">Everything you need to create a winning resume</p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              { icon: FileText, gradient: 'from-blue-500 to-cyan-500',    title: 'ATS Compatibility',    desc: 'Ensure your resume passes Applicant Tracking Systems with our advanced compatibility scoring.' },
-              { icon: CheckCircle, gradient: 'from-green-500 to-emerald-500', title: 'Skills Matching', desc: 'Compare your skills against job requirements and identify gaps instantly.' },
-              { icon: Brain, gradient: 'from-purple-500 to-pink-500',     title: 'AI Summary',           desc: 'Get an intelligent summary of your resume with key strengths and highlights.' },
-              { icon: TrendingUp, gradient: 'from-orange-500 to-red-500', title: 'Experience Analysis',  desc: 'Evaluate the strength and impact of your professional experience.' },
-              { icon: Sparkles, gradient: 'from-pink-500 to-rose-500',    title: 'Smart Suggestions',    desc: 'Receive personalized recommendations to improve your resume effectiveness.' },
-              { icon: Target, gradient: 'from-indigo-500 to-purple-500',  title: 'AI Agent Automation',  desc: 'Send your resume via email and get automatic analysis and results.' },
-            ].map(({ icon: Icon, gradient, title, desc }) => (
-              <div key={title} className="bg-white/80 backdrop-blur-xl rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all">
-                <div className={`p-4 bg-gradient-to-br ${gradient} rounded-xl w-fit mb-6`}>
-                  <Icon className="w-8 h-8 text-white" />
+          <div className="max-w-6xl mx-auto">
+            <div className="grid lg:grid-cols-[0.9fr_1.1fr] gap-10 items-end mb-14">
+              <div>
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/85 border border-indigo-100 rounded-full shadow-sm mb-5">
+                  <Star className="w-4 h-4 text-indigo-600" />
+                  <span className="text-sm font-semibold text-indigo-600">Feature Highlights</span>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">{title}</h3>
-                <p className="text-gray-600">{desc}</p>
+                <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-4 leading-tight">
+                  Built for resume analysis, candidate flow, and recruiter clarity
+                </h2>
+                <p className="text-lg text-slate-600 max-w-xl">
+                  The interface now feels more like a product suite than a demo page, and the core capabilities are framed around the real hiring workflow.
+                </p>
               </div>
-            ))}
+
+              <div className="grid sm:grid-cols-3 gap-4">
+                {[
+                  { label: "Automated Review", value: "Resume + email intelligence" },
+                  { label: "Actionable Output", value: "Scores, gaps, and suggestions" },
+                  { label: "Operations View", value: "Dashboards, search, and tracking" },
+                ].map(({ label, value }) => (
+                  <div key={label} className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white shadow-lg p-5">
+                    <div className="text-xs uppercase tracking-[0.18em] text-slate-400 mb-2">{label}</div>
+                    <div className="text-sm font-bold text-slate-800 leading-6">{value}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-7">
+              {FEATURE_CARDS.map(({ icon: Icon, gradient, eyebrow, title, desc }) => (
+                <div key={title} className="group relative overflow-hidden bg-white/80 backdrop-blur-xl rounded-[1.75rem] p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-white hover:-translate-y-1">
+                  <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-indigo-400/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className={`inline-flex p-4 bg-gradient-to-br ${gradient} rounded-2xl shadow-lg mb-6`}>
+                    <Icon className="w-8 h-8 text-white" />
+                  </div>
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400 mb-3">{eyebrow}</p>
+                  <h3 className="text-2xl font-black text-slate-900 mb-3">{title}</h3>
+                  <p className="text-slate-600 leading-7">{desc}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 

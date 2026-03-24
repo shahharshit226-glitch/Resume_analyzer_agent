@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 # All labels the system will create / use
 REQUIRED_LABELS = [
+    "Resume",
     "HR_Appointments",
     "HR_Resignations",
     "Finance_Billing",

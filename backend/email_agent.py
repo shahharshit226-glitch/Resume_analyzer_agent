@@ -1533,6 +1533,7 @@ class EmailAgent:
 
         icon     = cfg.get("icon", "📧")
         priority = cfg.get("priority", "LOW")
+        label    = cfg.get("label", category)
         self._log(f"{icon} [{category}] | From: {sender_email} | Subject: '{subject[:50]}'")
 
         # ── 2. Save to DB ─────────────────────────────────────────────────────
@@ -1553,7 +1554,7 @@ class EmailAgent:
 
         # ── 3. Apply Gmail label ───────────────────────────────────────────────
         if mail_conn is not None:
-            self._apply_gmail_label(mail_conn, email_id, category)
+            self._apply_gmail_label(mail_conn, email_id, label)
         else:
             self._log(f"ℹ️  Gmail label '{category}' not applied — no IMAP connection available")
 
@@ -1616,6 +1617,8 @@ class EmailAgent:
             self._log(f"📎 {len(attachments)} valid attachment(s) from {sender_email}")
 
             # ── 8. Analyze ────────────────────────────────────────────────────
+            if mail_conn is not None:
+                self._apply_gmail_label(mail_conn, email_id, "Resume")
             resume_attachment = attachments[0]
             self._log(f"🔍 Analyzing: {resume_attachment['filename']} from {sender_email}")
 
