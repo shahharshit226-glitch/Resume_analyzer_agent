@@ -8,6 +8,21 @@ const API    = "http://localhost:8000";
 const COLORS = ["#4F46E5", "#10B981", "#EF4444", "#F59E0B", "#8B5CF6", "#EC4899"];
 const POLL_INTERVAL = 15000;
 
+async function fetchJson(url, options = {}) {
+  const response = await fetch(url, options);
+  if (!response.ok) {
+    let detail = `${response.status}`;
+    try {
+      const body = await response.json();
+      detail = body?.detail || detail;
+    } catch {
+      // Ignore non-JSON error bodies.
+    }
+    throw new Error(detail);
+  }
+  return response.json();
+}
+
 const StatCard = ({ icon, label, value, sub, bg }) => (
   <div className={`${bg} rounded-2xl p-5 shadow-sm`}>
     <div className="text-3xl mb-2">{icon}</div>
@@ -33,16 +48,16 @@ const AnalyticsDashboard = ({ token }) => {
     setError("");
     try {
       const [s, d, sc, mc, tr] = await Promise.all([
-        fetch(`${API}/analytics/summary`,            { headers }).then(r => r.json()),
-        fetch(`${API}/analytics/candidates-per-day`, { headers }).then(r => r.json()),
-        fetch(`${API}/analytics/score-distribution`, { headers }).then(r => r.json()),
-        fetch(`${API}/analytics/mail-categories`,    { headers }).then(r => r.json()),
-        fetch(`${API}/analytics/top-job-roles`,      { headers }).then(r => r.json()),
+        fetchJson(`${API}/analytics/summary`,            { headers }),
+        fetchJson(`${API}/analytics/candidates-per-day`, { headers }),
+        fetchJson(`${API}/analytics/score-distribution`, { headers }),
+        fetchJson(`${API}/analytics/mail-categories`,    { headers }),
+        fetchJson(`${API}/analytics/top-job-roles`,      { headers }),
       ]);
       setSummary(s); setPerDay(d); setScoreDist(sc); setMailCats(mc); setTopRoles(tr);
       setLastUpdated(new Date().toLocaleTimeString());
-    } catch {
-      setError("Could not load analytics. Make sure the backend is running.");
+    } catch (err) {
+      setError(`Could not load analytics: ${err.message || "backend error"}`);
     } finally {
       if (showLoader) setLoading(false);
     }

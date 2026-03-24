@@ -26,7 +26,7 @@ def _mail_db():
 @router.get("/candidates.csv")
 def export_candidates():
     """Download all candidates as CSV."""
-    conn = _mail_db()
+    conn = _db()
     rows = conn.execute(
         "SELECT email, job_role, ats_score, status, processed_at FROM candidates ORDER BY processed_at DESC"
     ).fetchall()
@@ -50,7 +50,7 @@ def export_candidates():
 @router.get("/business-mails.csv")
 def export_business_mails():
     """Download all categorised business mails as CSV."""
-    conn = _db()
+    conn = _mail_db()
     try:
         rows = conn.execute("""
             SELECT sender, subject, category, label, priority,

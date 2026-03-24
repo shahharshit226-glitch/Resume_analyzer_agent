@@ -71,8 +71,11 @@ def dashboard_sections():
         mails = []
         for cat in cats:
             mails.extend(get_mails_by_category(cat))
-        # Sort by processed_at desc (string sort on 'YYYY-MM-DD HH:MM' works)
-        mails.sort(key=lambda m: m.get("processed_at", ""), reverse=True)
+        # Some legacy rows have a null processed_at, so fall back before sorting.
+        mails.sort(
+            key=lambda m: m.get("processed_at") or m.get("received_at") or "",
+            reverse=True,
+        )
         result[section] = {
             "categories": cats,
             "mails": mails,
