@@ -1,0 +1,15 @@
+Use these endpoints:
+
+Business email category data
+
+GET /categorized-mails/dashboard-sections (best for frontend sections/cards)
+GET /categorized-mails/all (all business emails)
+GET /categorized-mails/{category} (single category like Support, Billing, etc.)
+GET /analytics/mail-categories (category counts for charts)
+Resume (candidate) data
+
+GET /candidates (all processed resumes with ATS/status)
+GET /analytics/summary (totals: candidates, shortlisted, rejected, avg score)
+GET /analytics/candidates-per-day
+GET /analytics/score-distribution
+GET /analytics/top-job-roles
