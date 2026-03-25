@@ -142,27 +142,27 @@ COMMON_GRAMMAR_ISSUES = {
 
 SKILL_ALIASES = {
     "python": ["python", "python3"],
-    "javascript": ["javascript", "js", "ecmascript"],
+    "javascript": ["javascript", "js", "ecmascript", "frontend scripting"],
     "java": ["java", "core java"],
     "react": ["react", "reactjs", "react.js"],
-    "node.js": ["node.js", "nodejs", "node js", "node-js"],
-    "sql": ["sql", "mysql", "postgresql", "postgres", "sqlite", "database", "databases"],
+    "node.js": ["node.js", "nodejs", "node js", "node-js", "server side javascript", "backend javascript"],
+    "sql": ["sql", "mysql", "postgresql", "postgres", "sqlite", "database", "databases", "relational database", "relational databases"],
     "git": ["git", "github", "gitlab", "version control"],
-    "docker": ["docker", "container", "containers", "containerization"],
-    "aws": ["aws", "amazon web services"],
+    "docker": ["docker", "container", "containers", "containerization", "containerized", "dockerized", "container based"],
+    "aws": ["aws", "amazon web services", "cloud platform", "cloud services"],
     "mongodb": ["mongodb", "mongo db", "mongo"],
     "express": ["express", "expressjs", "express.js"],
     "rest api": ["rest api", "rest apis", "restful api", "restful apis"],
     "api": ["api", "apis"],
     "html": ["html", "html5"],
     "css": ["css", "css3"],
-    "kubernetes": ["kubernetes", "k8s"],
-    "jenkins": ["jenkins", "jenkins pipeline", "jenkins pipelines"],
-    "terraform": ["terraform", "infrastructure as code", "iac"],
-    "monitoring": ["monitoring", "observability"],
-    "ci/cd": ["ci/cd", "ci cd", "cicd", "ci-cd", "continuous integration", "continuous delivery"],
-    "machine learning": ["machine learning", "ml"],
-    "data analysis": ["data analysis", "data analytics"],
+    "kubernetes": ["kubernetes", "k8s", "container orchestration"],
+    "jenkins": ["jenkins", "jenkins pipeline", "jenkins pipelines", "build pipeline", "deployment pipeline"],
+    "terraform": ["terraform", "infrastructure as code", "iac", "infra provisioning", "infrastructure provisioning"],
+    "monitoring": ["monitoring", "observability", "telemetry", "metrics", "alerting"],
+    "ci/cd": ["ci/cd", "ci cd", "cicd", "ci-cd", "continuous integration", "continuous delivery", "continuous deployment", "release pipeline"],
+    "machine learning": ["machine learning", "ml", "predictive modeling", "model training"],
+    "data analysis": ["data analysis", "data analytics", "analytical reporting"],
     "tensorflow": ["tensorflow", "tf"],
     "figma": ["figma", "figma design"],
     "agile": ["agile", "scrum", "kanban"],
@@ -175,6 +175,32 @@ def _normalize_skill_text(value: str) -> str:
 
 def _normalize_compact(value: str) -> str:
     return re.sub(r"[^a-z0-9]+", "", value.lower()).strip()
+
+
+def _expand_aliases(skill_lower: str) -> List[str]:
+    aliases = [skill_lower, *SKILL_ALIASES.get(skill_lower, [])]
+    expanded = []
+    seen = set()
+
+    for alias in aliases:
+        candidate_aliases = [alias]
+        if alias.endswith("ization"):
+            stem = alias[:-7]
+            candidate_aliases.extend([f"{stem}ize", f"{stem}ized"])
+        elif alias.endswith("isation"):
+            stem = alias[:-7]
+            candidate_aliases.extend([f"{stem}ise", f"{stem}ised"])
+        elif alias.endswith("ing") and len(alias) > 6:
+            stem = alias[:-3]
+            candidate_aliases.extend([stem, f"{stem}ed"])
+
+        for candidate in candidate_aliases:
+            normalized = candidate.strip().lower()
+            if normalized and normalized not in seen:
+                seen.add(normalized)
+                expanded.append(normalized)
+
+    return expanded
 
 
 def _text_quality_score(value: str) -> int:
@@ -217,7 +243,7 @@ def _contains_skill(text_lower: str, skill: str) -> bool:
 
     normalized_text = _normalize_skill_text(text_lower)
     compact_text = _normalize_compact(text_lower)
-    aliases = [skill_lower, *SKILL_ALIASES.get(skill_lower, [])]
+    aliases = _expand_aliases(skill_lower)
     for alias in aliases:
         # Match phrases as standalone terms so "java" doesn't match "javascript".
         escaped = re.escape(alias).replace(r"\ ", r"[\s\-_/]+")
