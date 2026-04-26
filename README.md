@@ -72,11 +72,6 @@ Candidate sends email  →  Agent detects it  →  Resume? Score + Reply
 - Analytics dashboard with score distribution, status breakdown, and job role charts
 - Notification bell, search/filter, and CSV export
 
-### 📝 Feedback & Job Application Portal
-- In-app feedback form — saved to DB, confirmation email sent to user
-- Candidates can **apply directly** after resume analysis — details saved and emailed to hiring inbox
-
----
 
 ## 🛠️ Tech Stack
 
