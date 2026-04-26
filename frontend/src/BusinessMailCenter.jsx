@@ -342,8 +342,8 @@
 
 
 import React, { useEffect, useState, useCallback } from "react";
+import { buildApiUrl } from "./config";
 
-const API_BASE = "http://localhost:8000";
 const POLL_INTERVAL = 15000;
 
 const SECTION_META = {
@@ -378,7 +378,7 @@ const DraftModal = ({ mail, onClose, onSend }) => {
   const handleSend = async () => {
     setSending(true);
     try {
-      const res = await fetch(`${API_BASE}/draft/send/${mail.id}`, { method: "POST" });
+      const res = await fetch(buildApiUrl(`/draft/send/${mail.id}`), { method: "POST" });
       const data = await res.json();
       if (data.status === "sent" || data.status === "already_sent") {
         setSent(true);
@@ -627,7 +627,7 @@ const BusinessMailCenter = () => {
     if (isManual) setRefreshing(true);
     setError(null);
     try {
-      const res  = await fetch(`${API_BASE}/categorized-mails/dashboard-sections`);
+      const res  = await fetch(buildApiUrl("/categorized-mails/dashboard-sections"));
       if (!res.ok) throw new Error("Failed to fetch");
       const data = await res.json();
       setSections(data);

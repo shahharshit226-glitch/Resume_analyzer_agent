@@ -154,6 +154,7 @@
 
 
 import React, { useEffect, useState, useCallback } from "react";
+import { buildApiUrl } from "./config";
 
 const POLL_INTERVAL = 10000; // refresh every 10 seconds
 
@@ -176,7 +177,7 @@ const CandidateDashboard = () => {
     if (isManual) setRefreshing(true);
     setError(null);
     try {
-      const res = await fetch("http://localhost:8000/candidates");
+      const res = await fetch(buildApiUrl("/candidates"));
       if (!res.ok) throw new Error("Failed to fetch");
       const data = await res.json();
       setCandidates(data);

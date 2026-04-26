@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { buildApiUrl } from "./config";
 
 const AuthContext = createContext(null);
-const API = "http://localhost:8000";
 
 export const AuthProvider = ({ children }) => {
   const [user,    setUser]    = useState(null);
@@ -11,18 +11,27 @@ export const AuthProvider = ({ children }) => {
   // On mount: validate stored token
   useEffect(() => {
     if (!token) { setLoading(false); return; }
-    fetch(`${API}/auth/me`, {
+    const controller = new AbortController();
+    setLoading(true);
+    fetch(buildApiUrl("/auth/me"), {
       headers: { Authorization: `Bearer ${token}` },
+      signal: controller.signal,
     })
       .then(r => (r.ok ? r.json() : Promise.reject()))
       .then(data => setUser(data))
-      .catch(() => { localStorage.removeItem("agh_token"); setToken(null); })
+      .catch((err) => {
+        if (err?.name === "AbortError") return;
+        localStorage.removeItem("agh_token");
+        setToken(null);
+      })
       .finally(() => setLoading(false));
-  }, []);
+
+    return () => controller.abort();
+  }, [token]);
 
   const login = async (email, password) => {
     const body = new URLSearchParams({ username: email, password });
-    const res  = await fetch(`${API}/auth/login`, { method: "POST", body });
+    const res  = await fetch(buildApiUrl("/auth/login"), { method: "POST", body });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.detail || "Login failed");
@@ -35,7 +44,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async ({ name, email, password }) => {
-    const res = await fetch(`${API}/auth/register`, {
+    const res = await fetch(buildApiUrl("/auth/register"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, password, role: "user" }),

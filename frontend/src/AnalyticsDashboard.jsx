@@ -3,8 +3,8 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
 } from "recharts";
+import { buildApiUrl } from "./config";
 
-const API    = "http://localhost:8000";
 const COLORS = ["#4F46E5", "#10B981", "#EF4444", "#F59E0B", "#8B5CF6", "#EC4899"];
 const POLL_INTERVAL = 15000;
 
@@ -48,11 +48,11 @@ const AnalyticsDashboard = ({ token }) => {
     setError("");
     try {
       const [s, d, sc, mc, tr] = await Promise.all([
-        fetchJson(`${API}/analytics/summary`,            { headers }),
-        fetchJson(`${API}/analytics/candidates-per-day`, { headers }),
-        fetchJson(`${API}/analytics/score-distribution`, { headers }),
-        fetchJson(`${API}/analytics/mail-categories`,    { headers }),
-        fetchJson(`${API}/analytics/top-job-roles`,      { headers }),
+        fetchJson(buildApiUrl("/analytics/summary"),            { headers }),
+        fetchJson(buildApiUrl("/analytics/candidates-per-day"), { headers }),
+        fetchJson(buildApiUrl("/analytics/score-distribution"), { headers }),
+        fetchJson(buildApiUrl("/analytics/mail-categories"),    { headers }),
+        fetchJson(buildApiUrl("/analytics/top-job-roles"),      { headers }),
       ]);
       setSummary(s); setPerDay(d); setScoreDist(sc); setMailCats(mc); setTopRoles(tr);
       setLastUpdated(new Date().toLocaleTimeString());
@@ -225,13 +225,13 @@ const AnalyticsDashboard = ({ token }) => {
       {/* Export buttons */}
       <div className="mt-8 flex flex-wrap gap-3">
         <a
-          href={`${API}/export/candidates.csv`}
+          href={buildApiUrl("/export/candidates.csv")}
           className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm transition-all shadow-sm"
         >
           ⬇️ Export Candidates CSV
         </a>
         <a
-          href={`${API}/export/business-mails.csv`}
+          href={buildApiUrl("/export/business-mails.csv")}
           className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold text-sm transition-all shadow-sm"
         >
           ⬇️ Export Business Mails CSV

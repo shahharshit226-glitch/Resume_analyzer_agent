@@ -14,6 +14,7 @@ import LoginPage from "./LoginPage";
 import NotificationBell from "./NotificationBell";
 import AnalyticsDashboard from "./AnalyticsDashboard";
 import SearchFilter from "./SearchFilter";
+import { buildApiUrl } from "./config";
 
 // ── Email Agent Control ────────────────────────────────────────────────────────
 const EmailAgentControl = () => {
@@ -213,7 +214,7 @@ const ResumeAnalyzer = () => {
       if (useCustomJob) formData.append('job_description', customJobDescription);
       else              formData.append('job_role', jobRole);
 
-      const response = await fetch('http://localhost:8000/analyze', { method: 'POST', body: formData });
+      const response = await fetch(buildApiUrl("/analyze"), { method: 'POST', body: formData });
       if (!response.ok) {
         let msg = 'Analysis failed';
         try { const d = await response.json(); msg = d.detail || msg; } catch {}
@@ -947,8 +948,8 @@ const ResumeAnalyzer = () => {
 
 // ── Auth gate ──────────────────────────────────────────────────────────────────
 const AppContent = () => {
-  const { user, loading } = useAuth();
-  const [loggedIn, setLoggedIn] = useState(!!localStorage.getItem("agh_token"));
+  const { user, token, loading } = useAuth();
+  const loggedIn = !!token;
 
   if (loading) return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 to-purple-900 flex items-center justify-center">
@@ -959,7 +960,7 @@ const AppContent = () => {
     </div>
   );
 
-  if (!loggedIn || !user) return <LoginPage onLogin={() => setLoggedIn(true)} />;
+  if (!loggedIn || !user) return <LoginPage onLogin={() => {}} />;
   return <ResumeAnalyzer />;
 };
 

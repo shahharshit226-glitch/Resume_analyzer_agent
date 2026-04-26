@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Search, X } from "lucide-react";
-
-const API = "http://localhost:8000";
+import { buildApiUrl } from "./config";
 
 const STATUS_BADGE = {
   Shortlisted: "bg-green-100 text-green-700 border-green-200",
@@ -29,8 +28,8 @@ const SearchFilter = ({ token }) => {
       setLoading(true);
       try {
         const [cr, mr] = await Promise.all([
-          fetch(`${API}/candidates`,              { headers: hdrs }).then(r => r.ok ? r.json() : []),
-          fetch(`${API}/categorized-mails/all`,   { headers: hdrs }).then(r => r.ok ? r.json() : []),
+          fetch(buildApiUrl("/candidates"),            { headers: hdrs }).then(r => r.ok ? r.json() : []),
+          fetch(buildApiUrl("/categorized-mails/all"), { headers: hdrs }).then(r => r.ok ? r.json() : []),
         ]);
         setCands(Array.isArray(cr) ? cr : []);
         setMails(Array.isArray(mr) ? mr : []);

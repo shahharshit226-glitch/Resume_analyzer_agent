@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Bell } from "lucide-react";
-
-const API = "http://localhost:8000";
+import { buildApiUrl } from "./config";
 
 const NotificationBell = ({ token }) => {
   const [items,   setItems]   = useState([]);
@@ -16,7 +15,7 @@ const NotificationBell = ({ token }) => {
   useEffect(() => {
     const poll = async () => {
       try {
-        const r = await fetch(`${API}/notifications/count`, { headers: hdrs });
+        const r = await fetch(buildApiUrl("/notifications/count"), { headers: hdrs });
         if (r.ok) { const d = await r.json(); setUnread(d.unread_count || 0); }
       } catch {}
     };
@@ -37,7 +36,7 @@ const NotificationBell = ({ token }) => {
   const fetchAll = async () => {
     setLoading(true);
     try {
-      const r = await fetch(`${API}/notifications`, { headers: hdrs });
+      const r = await fetch(buildApiUrl("/notifications"), { headers: hdrs });
       if (r.ok) {
         const d = await r.json();
         setItems(d.notifications || []);
